@@ -1,0 +1,20 @@
+{
+  "listen" : 8055,
+  "fb_id" : "",
+  "fb_secret" : "",
+
+  "db_driver" : "mysql",
+
+  "redis_ip": "127.0.0.1",
+  "redis_port": 6379,
+  "jpush_key": "28dbfe51120dc34905044161",
+  "jpush_secret": "a4736c125d39148f03a24b51",
+
+  "mysql" : {
+    "host" : "localhost",
+    "user" : "root",
+    "password" : "ming.niu",
+    "database" : "teameeting",
+    "useConnectionPooling": true
+  }
+}
