@@ -15,6 +15,14 @@ exports.randomStrNumber = function(length) {
     }
     return random;
 }
+/**
+ * get a number not larger than number
+ * @param number
+ * @returns {number}
+ */
+exports.randomNumber = function (number) {
+    return Math.floor(Math.random() * number);
+}
 
 exports.randomString = function() {
     var strRandom = Math.random().toString(36).substr(2,8);

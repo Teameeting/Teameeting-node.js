@@ -76,15 +76,15 @@ DROP TABLE IF EXISTS `message_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `message_info` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'message id',
   `messagetype` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'type of message',
-  `messageid` varchar(64) NOT NULL COMMENT 'message identifier',
   `meetingid` varchar(64) NOT NULL DEFAULT '' COMMENT 'meeting id which send to',
   `sessionid` varchar(64) NOT NULL DEFAULT '' COMMENT 'session id which send to',
   `userid` varchar(64) NOT NULL DEFAULT '' COMMENT 'user id who send this message',
   `sendtime` bigint(20) NOT NULL DEFAULT '0' COMMENT 'time of sending',
   `message` varchar(1024) NOT NULL DEFAULT '' COMMENT 'message content',
-  PRIMARY KEY (`messageid`),
-  UNIQUE KEY `messageid` (`messageid`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -167,6 +167,7 @@ CREATE TABLE `user_session_info` (
   `userid` varchar(64) NOT NULL DEFAULT '' COMMENT 'user identifier',
   `sessionid` varchar(64) NOT NULL DEFAULT '' COMMENT 'session identifier',
   `meetingid` varchar(64) NOT NULL DEFAULT '' COMMENT 'meeting identifier',
+  `anyrtcid` varchar(64) NOT NULL DEFAULT '' COMMENT 'anyrtcid associate with sdk',
   `entertime` bigint(20) NOT NULL DEFAULT '0' COMMENT 'time of entering this session',
   `leavetime` bigint(20) NOT NULL DEFAULT '0' COMMENT 'time of leaving this session',
   PRIMARY KEY (`userid`,`sessionid`),
@@ -189,4 +190,4 @@ CREATE TABLE `user_session_info` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-12-17 15:12:01
+-- Dump completed on 2016-01-13 16:42:29
