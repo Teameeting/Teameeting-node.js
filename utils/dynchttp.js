@@ -14,7 +14,7 @@ exports.validateUser = function(req, res, cb) {
                 cb(null, false);
             } else {
                 if (data === sign) {
-                    redisClient.expire(array[0], 60 * 60 * 24 * 7);
+                    //redisClient.expire(array[0], 60 * 60);
                     cb(null, array[0]);
                 } else {
                     cb(null, false);

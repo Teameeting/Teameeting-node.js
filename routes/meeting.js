@@ -6,7 +6,8 @@ var router = express.Router();
 
 router.get('/getMeetingInfo/:meetingid', function(req, res, next) {
     var meetingid = req.params.meetingid;
-    db.queryMeetingInfoById([meetingid], function (err, response) {
+    var userid = req.params.userid;
+    db.queryMeetingInfoById([meetingid, userid], function (err, response) {
         if (!err) {
             if(response.length > 0) {
                 var responseJson = {
@@ -24,23 +25,6 @@ router.get('/getMeetingInfo/:meetingid', function(req, res, next) {
                 };
                 dynchttp.sendSuccess(req, res, responseJson);
             }
-        } else {
-            dynchttp.sendDbError(req, res);
-        }
-    })
-});
-
-router.get('/getMeetingMemberList/:meetingid', function(req, res, next) {
-    var meetingid = req.params.meetingid;
-    db.queryMeetingMember([meetingid], function (err, response) {
-        if (!err) {
-            var responseJson = {
-                requestid: req._startTime.valueOf(),
-                code: 200,
-                meetingMemberList:response,
-                message: 'get meeting member success'
-            };
-            dynchttp.sendSuccess(req, res, responseJson);
         } else {
             dynchttp.sendDbError(req, res);
         }
@@ -85,13 +69,7 @@ router.post('/applyRoom', function(req, res, next) {
                         meetingid = 400000000000 + response.length ;
                     }
 
-                    var anyrtcid = 800000000000;
-                    if(response.length > 0 && response[0].meetingNum > 0) {
-                        anyrtcid = parseInt(response[0].maxMeetingid) + 1;
-                    } else {
-                        anyrtcid = 800000000000 + response.length ;
-                    }
-
+                    console.log(meetingid)
                     db.queryMeetingInfoById([meetingid], function (err, response) {
                         if (!err) {
                             if (response.length > 0) {
@@ -102,14 +80,14 @@ router.post('/applyRoom', function(req, res, next) {
                                 };
                                 dynchttp.sendSuccess(req, res, responseJson);
                             } else {
-                                db.insertMeeting([userid, meetingid, anyrtcid, meetname, meetdesc, meetusable, pushable, meettype1, meettype2, time],
+                                db.insertMeeting([userid, meetingid, meetname, meetdesc, meetusable, pushable, meettype1, meettype2, time],
                                     function (err, response) {
                                         if (!err) {
                                             if (response.affectedRows == 1) {
                                                 var responseJson = {
                                                     requestid: req._startTime.valueOf(),
                                                     code: 200,
-                                                    meetingInfo: {meetingid: meetingid, anyrtcid: anyrtcid, meetname: meetname, meetdesc: meetdesc, meetenable: meetusable, pushable: pushable, meettype: meettype1, jointime:time},
+                                                    meetingInfo: {meetingid: meetingid, meetname: meetname, meetdesc: meetdesc, meetusable: meetusable, pushable: pushable, meettype: meettype1, jointime:time},
                                                     message: 'apply meeting success'
                                                 };
                                                 dynchttp.sendSuccess(req, res, responseJson);
@@ -275,53 +253,27 @@ router.post("/insertUserMeetingRoom", function (req, res, next) {
                             }
                         })
                     } else {
-                        // select meeting room is private
-                        db.getMeetingInfo([meetingid], function (err, meetInfo) {
-                            if(err) {
-                                dynchttp.sendDbError(req, res);
-                            } else {
-                                if (meetInfo.length > 0) {
-                                    if (meetInfo.meetusable == 2) {
-                                        var responseJson = {
-                                            requestid: req._startTime.valueOf(),
-                                            code: 205,
-                                            message: 'meeting room is private, add failed!'
-                                        };
-                                        dynchttp.sendSuccess(req, res, responseJson);
-                                    } else {
-                                        db.insertUserMeeting([userid, meetingid, type, pushable, time], function (err, response) {
-                                            if (!err) {
-                                                if (response.affectedRows == 1) {
-                                                    var responseJson = {
-                                                        requestid: req._startTime.valueOf(),
-                                                        code: 200,
-                                                        message: 'insert user meeting room success'
-                                                    };
-                                                    dynchttp.sendSuccess(req, res, responseJson);
-                                                } else {
-                                                    var responseJson = {
-                                                        requestid: req._startTime.valueOf(),
-                                                        code: 400,
-                                                        message: 'insert user meeting room failed'
-                                                    };
-                                                    dynchttp.sendSuccess(req, res, responseJson);
-                                                }
-                                            } else {
-                                                dynchttp.sendDbError(req, res);
-                                            }
-                                        });
-                                    }
-
+                        db.insertUserMeeting([userid, meetingid, type, pushable, time], function (err, response) {
+                            if (!err) {
+                                if (response.affectedRows == 1) {
+                                    var responseJson = {
+                                        requestid: req._startTime.valueOf(),
+                                        code: 200,
+                                        message: 'insert user meeting room success'
+                                    };
+                                    dynchttp.sendSuccess(req, res, responseJson);
                                 } else {
                                     var responseJson = {
                                         requestid: req._startTime.valueOf(),
-                                        code: 206,
-                                        message: 'meeting room not exist'
+                                        code: 400,
+                                        message: 'insert user meeting room failed'
                                     };
                                     dynchttp.sendSuccess(req, res, responseJson);
                                 }
+                            } else {
+                                dynchttp.sendDbError(req, res);
                             }
-                        })
+                        });
                     }
                 } else {
                     dynchttp.sendDbError(req, res);
@@ -612,14 +564,12 @@ router.post('/updateUserMeetingJointime', function(req, res, next) {
                 return dynchttp.sendMissParams(req, res, "meetingid");
             }
 
-            var time = new Date().valueOf();
-            db.updateMeetJoinTime([time, meetingid, userid], function (err, response) {
+            db.updateMeetJoinTime([(new Date().valueOf()), meetingid, userid], function (err, response) {
                 if (!err) {
                     if(response.affectedRows == 1) {
                         var responseJson = {
                             requestid: req._startTime.valueOf(),
                             code: 200,
-                            jointime: time,
                             message: 'update user meeting jointime success'
                         };
                         dynchttp.sendSuccess(req, res, responseJson);
@@ -693,7 +643,7 @@ router.post('/getMeetingMsgList', function(req, res, next) {
                 return dynchttp.sendMissParams(req, res, "pageSize");
             }
 
-            db.getRoomMessageList([meetingid], Number(pageNum), Number(pageSize), function (err, response) {
+            db.getUserMeetingList([meetingid], Number(pageNum), Number(pageSize), function (err, response) {
                 if (!err) {
                     var responseJson = {
                         requestid: req._startTime.valueOf(),
@@ -720,6 +670,7 @@ router.post("/insertMeetingMsg", function (req, res, next) {
     dynchttp.validateUser(req, res, function(err, userid){
         if (userid) {
             var meetingid = req.body.meetingid;
+            var messageid = req.body.messageid;
             var messagetype = req.body.messagetype;
             var sessionid = req.body.sessionid;
             var userid = req.body.userid;
@@ -727,6 +678,9 @@ router.post("/insertMeetingMsg", function (req, res, next) {
 
             if (null == meetingid || meetingid.length == 0) {
                 return dynchttp.sendMissParams(req, res, "meetingid");
+            }
+            if (null == messageid || messageid.length == 0) {
+                return dynchttp.sendMissParams(req, res, "messageid");
             }
             if (null == messagetype || messagetype.length == 0) {
                 return dynchttp.sendMissParams(req, res, "messagetype");
@@ -741,7 +695,7 @@ router.post("/insertMeetingMsg", function (req, res, next) {
                 return dynchttp.sendMissParams(req, res, "strMsg");
             }
 
-            db.insertRoomMessage([messagetype, meetingid, sessionid, userid, message], function (err, response) {
+            db.insertRoomMessage([messagetype, messageid, meetingid, sessionid, userid, message], function (err, response) {
                 if (!err) {
                     if (response.affectedRows == 1) {
                         var responseJson = {
@@ -902,7 +856,7 @@ router.post("/updateSessionMeetingNumber", function (req, res, next) {
         if (userid) {
             var sessionid = req.body.sessionid;
             var sessionnumber = req.body.sessionnumber;
-            var meetingid = req.body.meetingid;
+
 
             if (null == sessionid || sessionid.length == 0) {
                 return dynchttp.sendMissParams(req, res, "sessionid");
@@ -910,11 +864,8 @@ router.post("/updateSessionMeetingNumber", function (req, res, next) {
             if (null == sessionnumber || sessionnumber.length == 0) {
                 return dynchttp.sendMissParams(req, res, "sessionnumber");
             }
-            if (null == meetingid || meetingid.length == 0) {
-                return dynchttp.sendMissParams(req, res, "meetingid");
-            }
 
-            db.updateSessionMeetingNumber([sessionnumber, sessionid, meetingid], function (err, response) {
+            db.updateSessionMeetingNumber([sessionnumber, sessionid], function (err, response) {
                 if (!err) {
                     if (response.affectedRows == 1) {
                         var responseJson = {
