@@ -7,7 +7,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 // Configuration
-global.config = JSON.parse(fs.readFileSync("config.json", "utf8"));
+global.config = JSON.parse(fs.readFileSync("/usr/local/teameeting/TeaMeetingServer/config.json", "utf8"));
 //global.config = require("./config");
 global.url = require("url");
 
@@ -20,6 +20,7 @@ redisClient.on("error", function (err) {
 global.db = require("./databases/"+config.db_driver);
 global.dyncutils = require("./utils/dyncutils");
 global.dynchttp = require("./utils/dynchttp");
+global.dyncname = require("./utils/dyncname");
 
 var routes = require('./routes/index');
 var users = require('./routes/users');

@@ -31,14 +31,16 @@ router.post("/pushMeetingMsg", function(req, res, next) {
                 var userList = "";
                 for (var i = 0; i< response.length; i++) {
                     if (i == 0) {
-                        userList += "'" + response[i].userid + "'";
+                        userList += "" + response[i].userid + "";
                     } else {
-                        userList +=",'" + response[i].userid + "'";
+                        userList += "," + response[i].userid + "";
                     }
                 }
+
+                console.log("userList: " + userList);
                 client.push().setPlatform(JPush.ALL)
                     .setAudience(JPush.tag(userList), JPush.alias(userList))
-                    .setNotification(notification, JPush.ios('ios alert', 'happy.caf', 5), JPush.android('android alert', null, 1))
+                    .setNotification(notification, JPush.ios(notification, 'happy.caf', 0), JPush.android(notification, null, 1))
                     .setMessage(pushMsg)
                     .setOptions(null, 60)
                     .send(function(err, response) {
@@ -61,8 +63,6 @@ router.post("/pushMeetingMsg", function(req, res, next) {
                             dynchttp.sendSuccess(req, res, responseJson);
                         }
                     });
-
-                console.log("userList: " + userList.toString());
             } else {
                 var responseJson = {
                     requestid: req._startTime.valueOf(),
@@ -91,25 +91,27 @@ router.post("/pushCommonMsg", function(req, res, next) {
     } /*else if(!isArray(targetid)) {
         return dynchttp.sendErrorParams(req, res, "targetid");
     }*/
-
+    console.log("targartid: " + targetid);
     if (null == pushMsg || pushMsg.length == 0) {
         return dynchttp.sendMissParams(req, res, "pushMsg");
     }
     if (null == notification || notification.length == 0) {
         return dynchttp.sendMissParams(req, res, "notification");
     }
-    if(targetid.length > 0) {
+
+    var targetArray = eval(targetid);
+    if(targetArray.length > 0) {
         var userList = "";
-        for (var i = 0; i< targetid.length; i++) {
+        for (var i = 0; i< targetArray.length; i++) {
             if (i == 0) {
-                userList += "'" + targetid[i] + "'";
+                userList += "" + targetArray[i] + "";
             } else {
-                userList +=",'" + targetid[i] + "'";
+                userList += "," + targetArray[i] + "";
             }
         }
-        client.push().setPlatform('ios', 'android')
+        client.push().setPlatform(JPush.ALL)
             .setAudience(JPush.tag(userList), JPush.alias(userList))
-            .setNotification(notification, JPush.ios('ios alert'), JPush.android('android alert', null, 1))
+            .setNotification(notification, JPush.ios(notification, 'happy.caf', 0), JPush.android(notification, null, 1))
             .setMessage(pushMsg)
             .setOptions(null, 60)
             .send(function(err, response) {

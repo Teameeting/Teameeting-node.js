@@ -137,6 +137,22 @@ exports.updatePushToken = function (data, callback) {
 }
 
 /**
+ * update the user's uname when it changes.
+ * @param data
+ * @param callback
+ */
+exports.updateNickname = function (data, callback) {
+    pool.getConnection(function(err, conn) {
+        if(err) {
+            console.log("POOL =====>" + err);
+        }
+        var sql = 'update user_info set uname ='+ conn.escape(data[0]) +' where userid='+ conn.escape(data[1]) +'';
+        conn.query(sql, callback);
+        conn.release();
+    });
+}
+
+/**
  * insert meeting room information into database when apply a new meeting room
  * @param data
  * @param callback
@@ -147,12 +163,13 @@ exports.insertMeeting = function (data, callback) {
             console.log("POOL =====>" + err);
         }
 
-        var sql = 'insert into meeting_info (userid, meetingid, meetname, meetdesc, meetusable, meettype1,' +
+        var sql = 'insert into meeting_info (userid, meetingid, anyrtcid, meetname, meetdesc, meetusable, meettype1,' +
             ' meettype2, crttime) values ('+ conn.escape(data[0]) + ', ' + conn.escape(data[1]) + ', '
             + conn.escape(data[2]) + ', ' + conn.escape(data[3]) + ', ' + conn.escape(data[4]) +', '
-            + conn.escape(data[6]) + ', ' + conn.escape(data[7]) + ', ' + conn.escape(data[8]) +')';
+            + conn.escape(data[5]) + ', ' + conn.escape(data[7]) + ', ' + conn.escape(data[8]) + ', '
+            + conn.escape(data[9]) +')';
         var sql1 = 'insert into user_meeting_info (userid, meetingid, owner, pushable, jointime) values ('+ conn.escape(data[0]) + ', ' +
-            conn.escape(data[1]) + ', '+ 1 +', ' + conn.escape(data[5]) +', '+ conn.escape(data[8]) +')';
+            conn.escape(data[1]) + ', '+ 1 +', ' + conn.escape(data[6]) +', '+ conn.escape(data[9]) +')';
         conn.query(sql1);
         conn.query(sql, callback);
         conn.release();
@@ -236,7 +253,23 @@ exports.getMeetMemNumber = function (data, callback) {
         if(err) {
             console.log("POOL =====>" + err);
         }
-        var sql = 'select memnumber from meeting_info where meetingid = ' + conn.escape(data) +'';
+        var sql = 'select memnumber from meeting_info where meetingid = ' + conn.escape(data[0]) +'';
+        conn.query(sql, callback);
+        conn.release();
+    });
+}
+
+/**
+ * get meeting information by meetingid
+ * @param data
+ * @param callback
+ */
+exports.getMeetingInfo = function (data, callback) {
+    pool.getConnection(function(err, conn) {
+        if(err) {
+            console.log("POOL =====>" + err);
+        }
+        var sql = 'select * from meeting_info where meetingid = ' + conn.escape(data[0]) +'';
         conn.query(sql, callback);
         conn.release();
     });
@@ -303,8 +336,8 @@ exports.queryMeetingInfoById = function (data, callback) {
         if(err) {
             console.log("POOL =====>" + err);
         }
-        var sql = 'select table_meeting.meetingid, table_meeting.userid, meetname, meetdesc, meetusable, pushable,'
-            + ' meettype1, memnumber, crttime from meeting_info as table_meeting, user_meeting_info as table_userMeeting '
+        var sql = 'select table_meeting.meetingid, table_meeting.userid, meetname, meetdesc, meetusable as meetenable, pushable,'
+            + ' meettype1 as meettype, memnumber, crttime as createtime from meeting_info as table_meeting, user_meeting_info as table_userMeeting '
             + ' where table_meeting.meetingid = ' + conn.escape(data[0]) +' and table_userMeeting.meetingid = '
             + conn.escape(data[0]) +' and table_userMeeting.userid = table_meeting.userid';
         conn.query(sql, callback);
@@ -313,7 +346,7 @@ exports.queryMeetingInfoById = function (data, callback) {
 }
 
 /**
- * query meeting owner or not by meetingid an userid
+ * query meeting owner or not by meetingid and userid
  * @param data
  * @param callback
  */
@@ -330,6 +363,22 @@ exports.queryMeetingOwner = function (data, callback) {
 }
 
 /**
+ * query meeting member list by meetingid
+ * @param data
+ * @param callback
+ */
+exports.queryMeetingMember = function (data, callback) {
+    pool.getConnection(function(err, conn) {
+        if(err) {
+            console.log("POOL =====>" + err);
+        }
+        var sql = 'select userid from user_meeting_info where meetingid= '+ conn.escape(data[0]) + '';
+        conn.query(sql, callback);
+        conn.release();
+    });
+}
+
+/**
  * delete the information from table meeting_info
  * @param data
  * @param callback
@@ -339,7 +388,8 @@ exports.deleteMeetingInfo = function (data, callback) {
         if(err) {
             console.log("POOL =====>" + err);
         }
-
+        var sqlSession = 'delete from meeting_session_info where meetingid= '+ conn.escape(data[0]) +'';
+        conn.query(sqlSession, function () {});
         var sql = 'delete from meeting_info where meetingid= '+ conn.escape(data[0]) + ' and userid='
             + conn.escape(data[1]) +'';
         conn.query(sql, callback);
@@ -365,18 +415,37 @@ exports.deleteUserMeeting = function (data, callback) {
     });
 }
 
-//exports.getUserMeetingList = function (data, pageNum, pageSize, callback) {
-//    pool.getConnection(function(err, conn) {
-//        if(err) {
-//            console.log("POOL =====>" + err);
-//        }
-//        var number = ((pageNum - 1) * pageSize);
-//        var sql = 'select * from meeting_info where userid = ' + conn.escape(data[0]) + ' order by crttime desc limit '
-//        + number +', ' + pageSize + '';
-//        conn.query(sql, callback);
-//        conn.release();
-//    });
-//}
+/**
+ * count the count of user's meeting room
+ * @param data
+ * @param callback
+ */
+exports.countUserMeeting = function (data, callback) {
+    pool.getConnection(function(err, conn) {
+        if(err) {
+            console.log("POOL =====>" + err);
+        }
+
+        var sql = 'select count(table_user.userid) as countMeeting, min(crttime) as createtime from meeting_info as table_meeting, '
+            + ' user_meeting_info as table_user where table_user.userid = ' + conn.escape(data[0])
+            + ' and table_meeting.meetingid = table_user.meetingid ';
+        conn.query(sql, callback);
+        conn.release();
+    });
+}
+
+exports.queryMeetingidByCrtTime = function (data, callback) {
+    pool.getConnection(function(err, conn) {
+        if(err) {
+            console.log("POOL =====>" + err);
+        }
+
+        var sql = 'select meetingid from meeting_info where userid = ' + conn.escape(data[0])
+            + ' and crttime = ' + conn.escape(data[1]) + '';
+        conn.query(sql, callback);
+        conn.release();
+    });
+}
 
 /**
  * get user's meeting list from meeting_info and user_meeting_info
@@ -391,8 +460,8 @@ exports.getUserMeetingList = function (data, pageNum, pageSize, callback) {
             console.log("POOL =====>" + err);
         }
         var number = ((pageNum - 1) * pageSize);
-        var sql = 'select table_meeting.userid as meetinguserid, table_user.meetingid as meetingid, table_meeting.meettype1 as meettype,' +
-            ' meetname, meetdesc, meetusable, pushable, memnumber, owner, jointime from meeting_info as table_meeting, ' +
+        var sql = 'select table_meeting.userid, table_user.meetingid as meetingid, anyrtcid, table_meeting.meettype1 as meettype,' +
+            ' meetname, meetdesc, meetusable as meetenable, pushable, memnumber, owner, crttime as createtime, jointime from meeting_info as table_meeting, ' +
             ' user_meeting_info as table_user where table_user.userid = ' + conn.escape(data[0]) +
             ' and table_meeting.meetingid = table_user.meetingid order by jointime desc limit ' + number + ', ' + pageSize + '';
         conn.query(sql, callback);
@@ -428,9 +497,9 @@ exports.insertRoomMessage = function (data, callback) {
             console.log("POOL =====>" + err);
         }
 
-        var sql = 'insert into message_info (messagetype, messageid, meetingid, sessionid, userid, message, sendtime) ' +
+        var sql = 'insert into message_info (messagetype, meetingid, sessionid, userid, message, sendtime) ' +
             'values ('+ conn.escape(data[0]) + ', ' + conn.escape(data[1]) + ', ' + conn.escape(data[2]) + ', '
-            + conn.escape(data[3]) + ', ' + conn.escape(data[4]) + ', ' + conn.escape(data[5]) +', ' + (new Date()).valueOf() +')';
+            + conn.escape(data[3]) + ', ' + conn.escape(data[4]) + ', ' + (new Date()).valueOf() +')';
         conn.query(sql, callback);
         conn.release();
     });
@@ -449,7 +518,9 @@ exports.getRoomMessageList = function (data, pageNum, pageSize, callback) {
             console.log("POOL =====>" + err);
         }
         var number = ((pageNum - 1) * pageSize);
-        var sql = 'select * from message_info where meetingid = ' + conn.escape(data[0]) + ' order by crttime desc limit '
+        var sql = 'select table_message.userid, uname as username, messagetype, meetingid, sessionid, message,'
+            + ' sendtime from message_info as table_message, user_info as table_user where table_message.meetingid = '
+            + conn.escape(data[0]) + ' and table_user.userid = table_message.userid order by sendtime desc limit '
             + number +', ' + pageSize + '';
         conn.query(sql, callback);
         conn.release();
@@ -502,8 +573,8 @@ exports.updateSessionMeetingEndtime = function (data, callback) {
         if(err) {
             console.log("POOL =====>" + err);
         }
-        var sql = 'update meeting_session_info set endtime ='+ (new Date()).valueOf() +' where sessionid = '+
-            conn.escape(data[0]) +'';
+        var sql = 'update meeting_session_info set endtime ='+ (new Date()).valueOf() +' where sessionid = '
+            + conn.escape(data[0]) +'';
         conn.query(sql, callback);
         conn.release();
     });
@@ -519,9 +590,18 @@ exports.updateSessionMeetingNumber = function (data, callback) {
         if(err) {
             console.log("POOL =====>" + err);
         }
-        var sql = 'update meeting_session_info set sessionnumber ='+ conn.escape(data[0]) +' where sessionid = '+
-            conn.escape(data[1]) +'';
-        conn.query(sql, callback);
-        conn.release();
+        var sql = 'update meeting_session_info set sessionnumber ='+ conn.escape(data[0]) +' where sessionid = '
+            + conn.escape(data[1]) + '';
+        conn.query(sql, function (err, updateResult) {
+            if (!err) {
+                var sqlupdate = 'update meeting_info set memnumber ='+ conn.escape(data[0]) +' where meetingid = '
+                    + conn.escape(data[2]) + '';
+                conn.query(sqlupdate, callback);
+                conn.release();
+            } else {
+                callback(err, updateResult);
+                conn.release();
+            }
+        });
     });
 }
