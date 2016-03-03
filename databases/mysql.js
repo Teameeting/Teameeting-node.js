@@ -185,7 +185,7 @@ exports.queryMeetingCount = function(callback) {
         if(err) {
             console.log("POOL =====>" + err);
         }
-        var sql = 'select count(*) as meetingNum, max(meetingid) as maxMeetingid from meeting_info';
+        var sql = 'select count(*) as meetingNum, max(meetingid) as maxMeetingid, max(anyrtcid) as maxAnyrtcid from meeting_info';
         conn.query(sql, callback);
         conn.release();
     });
@@ -336,7 +336,7 @@ exports.queryMeetingInfoById = function (data, callback) {
         if(err) {
             console.log("POOL =====>" + err);
         }
-        var sql = 'select table_meeting.meetingid, table_meeting.userid, meetname, meetdesc, meetusable as meetenable, pushable,'
+        var sql = 'select table_meeting.meetingid, table_meeting.userid, anyrtcid, meetname, meetdesc, meetusable as meetenable, pushable,'
             + ' meettype1 as meettype, memnumber, crttime as createtime from meeting_info as table_meeting, user_meeting_info as table_userMeeting '
             + ' where table_meeting.meetingid = ' + conn.escape(data[0]) +' and table_userMeeting.meetingid = '
             + conn.escape(data[0]) +' and table_userMeeting.userid = table_meeting.userid';

@@ -87,7 +87,7 @@ router.post('/applyRoom', function(req, res, next) {
 
                     var anyrtcid = 800000000000;
                     if(response.length > 0 && response[0].meetingNum > 0) {
-                        anyrtcid = parseInt(response[0].maxMeetingid) + 1;
+                        anyrtcid = parseInt(response[0].maxAnyrtcid) + 1;
                     } else {
                         anyrtcid = 800000000000 + response.length ;
                     }

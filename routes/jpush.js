@@ -15,6 +15,7 @@ router.post("/pushMeetingMsg", function(req, res, next) {
     var meetingid = req.body.meetingid;
     var pushMsg = req.body.pushMsg;
     var notification = req.body.notification;
+    var extra = req.body.extra;
 
     if (null == meetingid || meetingid.length == 0) {
         return dynchttp.sendMissParams(req, res, "meetingid");
@@ -25,6 +26,12 @@ router.post("/pushMeetingMsg", function(req, res, next) {
     if (null == notification || notification.length == 0) {
         return dynchttp.sendMissParams(req, res, "notification");
     }
+    var jsonExtra;
+    if (null == extra || extra.length == 0) {
+        jsonExtra = {};
+    }
+    jsonExtra= JSON.parse(extra);
+
     db.getPushMeetingList([meetingid], function (err, response) {
         if(!err) {
             if(response.length > 0) {
@@ -40,7 +47,7 @@ router.post("/pushMeetingMsg", function(req, res, next) {
                 console.log("userList: " + userList);
                 client.push().setPlatform(JPush.ALL)
                     .setAudience(JPush.tag(userList), JPush.alias(userList))
-                    .setNotification(notification, JPush.ios(notification, 'happy.caf', 0), JPush.android(notification, null, 1))
+                    .setNotification(notification, JPush.ios(notification, 'happy.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
                     .setMessage(pushMsg)
                     .setOptions(null, 60)
                     .send(function(err, response) {
@@ -85,19 +92,25 @@ router.post("/pushCommonMsg", function(req, res, next) {
     var targetid = req.body.targetid;
     var pushMsg = req.body.pushMsg;
     var notification = req.body.notification;
+    var extra = req.body.extra;
 
     if (null == targetid || targetid.length == 0) {
         return dynchttp.sendMissParams(req, res, "targetid");
     } /*else if(!isArray(targetid)) {
         return dynchttp.sendErrorParams(req, res, "targetid");
     }*/
-    console.log("targartid: " + targetid);
+    console.log("extra: " + extra);
     if (null == pushMsg || pushMsg.length == 0) {
         return dynchttp.sendMissParams(req, res, "pushMsg");
     }
     if (null == notification || notification.length == 0) {
         return dynchttp.sendMissParams(req, res, "notification");
     }
+    var jsonExtra;
+    if (null == extra || extra.length == 0) {
+        jsonExtra = {};
+    }
+    jsonExtra= JSON.parse(extra);
 
     var targetArray = eval(targetid);
     if(targetArray.length > 0) {
@@ -111,7 +124,7 @@ router.post("/pushCommonMsg", function(req, res, next) {
         }
         client.push().setPlatform(JPush.ALL)
             .setAudience(JPush.tag(userList), JPush.alias(userList))
-            .setNotification(notification, JPush.ios(notification, 'happy.caf', 0), JPush.android(notification, null, 1))
+            .setNotification(notification, JPush.ios(notification, 'happy.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
             .setMessage(pushMsg)
             .setOptions(null, 60)
             .send(function(err, response) {
