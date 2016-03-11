@@ -13,6 +13,8 @@ var client = JPush.buildClient(config.jpush_key, config.jpush_secret);
 router.post("/pushMeetingMsg", function(req, res, next) {
 
     var meetingid = req.body.meetingid;
+    var msgFromid = req.body.msgFromId;
+    var meetingOnlineMembers = req.body.meetingOnlineMembers;
     var pushMsg = req.body.pushMsg;
     var notification = req.body.notification;
     var extra = req.body.extra;
@@ -20,6 +22,13 @@ router.post("/pushMeetingMsg", function(req, res, next) {
     if (null == meetingid || meetingid.length == 0) {
         return dynchttp.sendMissParams(req, res, "meetingid");
     }
+    if (null == msgFromid || msgFromid.length == 0) {
+        return dynchttp.sendMissParams(req, res, "msgFromid");
+    }
+    if (null == meetingOnlineMembers || meetingOnlineMembers.length == 0) {
+        return dynchttp.sendMissParams(req, res, "meetingOnlineMembers");
+    }
+
     if (null == pushMsg || pushMsg.length == 0) {
         return dynchttp.sendMissParams(req, res, "pushMsg");
     }
@@ -32,44 +41,57 @@ router.post("/pushMeetingMsg", function(req, res, next) {
     }
     jsonExtra= JSON.parse(extra);
 
+    var jsonArrayOnlineMember = eval(JSON.parse(meetingOnlineMembers));
+
     db.getPushMeetingList([meetingid], function (err, response) {
         if(!err) {
             if(response.length > 0) {
                 var userList = "";
                 for (var i = 0; i< response.length; i++) {
-                    if (i == 0) {
-                        userList += "" + response[i].userid + "";
-                    } else {
-                        userList += "," + response[i].userid + "";
+                    if(msgFromid != response[i].userid && dyncutils.isExistInArray(response[i].userid, jsonArrayOnlineMember) == 0) {
+                        if (i == 0 || userList == "") {
+                            userList += "" + response[i].userid + "";
+                        } else {
+                            userList += "," + response[i].userid + "";
+                        }
                     }
                 }
 
                 console.log("userList: " + userList);
-                client.push().setPlatform(JPush.ALL)
-                    .setAudience(JPush.tag(userList), JPush.alias(userList))
-                    .setNotification(notification, JPush.ios(notification, 'happy.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
-                    .setMessage(pushMsg)
-                    .setOptions(null, 60)
-                    .send(function(err, response) {
-                        if (err) {
-                            console.log(err.message);
-                            var responseJson = {
-                                requestid: req._startTime.valueOf(),
-                                code: 400,
-                                message: err.message
-                            };
-                            dynchttp.sendSuccess(req, res, responseJson);
-                        } else {
-                            console.log('Sendno: ' + response.sendno);
-                            console.log('Msg_id: ' + response.msg_id);
-                            var responseJson = {
-                                requestid: req._startTime.valueOf(),
-                                code: 200,
-                                message: 'push message succuss'
-                            };
-                            dynchttp.sendSuccess(req, res, responseJson);
-                        }
-                    });
+                if (userList != "") {
+                    client.push().setPlatform(JPush.ALL)
+                        .setAudience(JPush.tag(userList), JPush.alias(userList))
+                        .setNotification(notification, JPush.ios(notification, 'happy.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
+                        .setMessage(pushMsg)
+                        .setOptions(null, 60)
+                        .send(function(err, response) {
+                            if (err) {
+                                console.log(err.message);
+                                var responseJson = {
+                                    requestid: req._startTime.valueOf(),
+                                    code: 400,
+                                    message: err.message
+                                };
+                                dynchttp.sendSuccess(req, res, responseJson);
+                            } else {
+                                console.log('Sendno: ' + response.sendno);
+                                console.log('Msg_id: ' + response.msg_id);
+                                var responseJson = {
+                                    requestid: req._startTime.valueOf(),
+                                    code: 200,
+                                    message: 'push message succuss'
+                                };
+                                dynchttp.sendSuccess(req, res, responseJson);
+                            }
+                        });
+                } else {
+                    var responseJson = {
+                        requestid: req._startTime.valueOf(),
+                        code: 400,
+                        message: 'no offline body to push'
+                    };
+                    dynchttp.sendSuccess(req, res, responseJson);
+                }
             } else {
                 var responseJson = {
                     requestid: req._startTime.valueOf(),

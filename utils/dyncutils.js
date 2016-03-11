@@ -40,6 +40,17 @@ exports.getMeetingId = function() {
     return strRandom;
 }
 
+exports.isExistInArray = function (str, array) {
+    var isExist = 0;
+    for(var i = 0; i < array.length; i++) {
+        if(str == array [i]) {
+            isExist = 1;
+            break;
+        }
+    }
+    return isExist;
+}
+
 exports.generateToken = function (data) {
     var random          = Math.floor(Math.random() * 100001);
     var timestamp       = (new Date()).getTime();
