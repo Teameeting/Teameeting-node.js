@@ -41,14 +41,14 @@ router.post("/init", function(req, res, next) {
               if (err) {
                   dynchttp.sendDbError(req, res);
               } else {
-                  redisClient.get(userid, function (err, reply) {
+                  redisClient.get("teameeting" + userid, function (err, reply) {
                       if(!err) {
                           var authorization = "";
                           if (null == reply) {
                               var token = userid + ":" + dyncutils.randomString();
                               authorization = dyncutils.aesCrypto(token);
-                              redisClient.set(userid, authorization);
-                              redisClient.expire(userid, 60 * 60 * 24 * 7);
+                              redisClient.set("teameeting" + userid, authorization);
+                              redisClient.expire("teameeting" + userid, 60 * 60 * 24 * 7);
                           } else {
                               authorization = reply;
                           }
@@ -158,7 +158,6 @@ router.post("/signout", function(req, res, next) {
             code: 200,
             message: 'sign out success'
           };
-          console.log('success');
           dynchttp.sendSuccess(req, res, responseJson);
         }
       });

@@ -7,7 +7,7 @@
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
+/*!40101 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -15,11 +15,15 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-
 DROP DATABASE IF EXISTS `teameeting`;
-CREATE DATABASE IF NOT EXISTS `teameeting` DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE IF NOT EXISTS `teameeting` DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `teameeting`;
-set character_set_server=utf8;
+set character_set_server=utf8mb4;
+set character_set_client = utf8mb4;
+set character_set_results = utf8mb4;
+set character_set_database = utf8mb4;
+set collation_server = utf8mb4_unicode_ci;
+set global init_connect = 'SET NAMES utf8mb4';
 
 --
 -- Table structure for table `meeting_info`
@@ -27,7 +31,7 @@ set character_set_server=utf8;
 
 DROP TABLE IF EXISTS `meeting_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meeting_info` (
   `meetusable` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'whether this meeting usable:no/yes/private:0/1/2',
   `meettype1` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'meet type:def/temp/daily:0/1/2',
@@ -39,10 +43,11 @@ CREATE TABLE `meeting_info` (
   `userid` varchar(64) NOT NULL DEFAULT '' COMMENT 'user who create this meeting',
   `meetname` varchar(32) NOT NULL DEFAULT '' COMMENT 'name of meeting, system pre-allocate',
   `meetdesc` varchar(64) DEFAULT NULL COMMENT 'description of this meeting',
+  `anyrtcid` varchar(64) NOT NULL DEFAULT '' COMMENT 'anyrtcid associate with sdk',
   `remain1` varchar(16) DEFAULT NULL COMMENT 'remain1',
   PRIMARY KEY (`meetingid`),
   UNIQUE KEY `meetingid` (`meetingid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -51,7 +56,7 @@ CREATE TABLE `meeting_info` (
 
 DROP TABLE IF EXISTS `meeting_session_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `meeting_session_info` (
   `sessionstatus` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'status of this session, starting or stopping',
   `sessiontype` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'type of this session:def/meeting/p2p/live:0/1/2/3',
@@ -65,7 +70,7 @@ CREATE TABLE `meeting_session_info` (
   UNIQUE KEY `sessionid` (`sessionid`),
   KEY `meetingid` (`meetingid`),
   CONSTRAINT `meeting_session_info_ibfk_1` FOREIGN KEY (`meetingid`) REFERENCES `meeting_info` (`meetingid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -74,7 +79,7 @@ CREATE TABLE `meeting_session_info` (
 
 DROP TABLE IF EXISTS `message_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `message_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'message id',
   `messagetype` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'type of message',
@@ -85,7 +90,7 @@ CREATE TABLE `message_info` (
   `message` varchar(1024) NOT NULL DEFAULT '' COMMENT 'message content',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -94,7 +99,7 @@ CREATE TABLE `message_info` (
 
 DROP TABLE IF EXISTS `teameeting_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `teameeting_info` (
   `sversiontype` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'software version type:def/beta/offical',
   `stype` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'software type:def/web/android/ios:0/1/2/3',
@@ -108,7 +113,7 @@ CREATE TABLE `teameeting_info` (
   `remain1` varchar(16) DEFAULT NULL COMMENT 'remain1',
   PRIMARY KEY (`sversion`),
   UNIQUE KEY `sversion` (`sversion`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -117,7 +122,7 @@ CREATE TABLE `teameeting_info` (
 
 DROP TABLE IF EXISTS `user_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_info` (
   `ustatus` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'online or not:offline/online:0/1',
   `uregtype` tinyint(4) NOT NULL DEFAULT '0' COMMENT 'reginster on which kindof dev:def/web/android/ios:0/1/2/3',
@@ -136,7 +141,7 @@ CREATE TABLE `user_info` (
   `remain1` varchar(16) DEFAULT NULL COMMENT 'remain1',
   PRIMARY KEY (`userid`),
   UNIQUE KEY `userid` (`userid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -145,7 +150,7 @@ CREATE TABLE `user_info` (
 
 DROP TABLE IF EXISTS `user_meeting_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_meeting_info` (
   `userid` varchar(64) NOT NULL DEFAULT '' COMMENT 'user identifier',
   `meetingid` varchar(64) NOT NULL DEFAULT '' COMMENT 'meeting identifier',
@@ -153,7 +158,7 @@ CREATE TABLE `user_meeting_info` (
   `pushable` tinyint(4) NOT NULL DEFAULT '1' COMMENT 'whether this meeting pushable:no/yes:0/1',
   `jointime` bigint(20) NOT NULL DEFAULT '0' COMMENT 'time of joining meeting',
   PRIMARY KEY (`userid`,`meetingid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -162,7 +167,7 @@ CREATE TABLE `user_meeting_info` (
 
 DROP TABLE IF EXISTS `user_session_info`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `user_session_info` (
   `userid` varchar(64) NOT NULL DEFAULT '' COMMENT 'user identifier',
   `sessionid` varchar(64) NOT NULL DEFAULT '' COMMENT 'session identifier',
@@ -174,7 +179,7 @@ CREATE TABLE `user_session_info` (
   KEY `meetingid` (`meetingid`),
   KEY `index_1` (`userid`),
   CONSTRAINT `user_session_info_ibfk_1` FOREIGN KEY (`meetingid`) REFERENCES `meeting_info` (`meetingid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,4 +195,4 @@ CREATE TABLE `user_session_info` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-01-13 16:42:29
+-- Dump completed on 2016-03-21 16:02:10

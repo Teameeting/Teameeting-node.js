@@ -76,20 +76,21 @@ router.post('/applyRoom', function(req, res, next) {
             if (null == pushable || pushable.length == 0) {
                 return dynchttp.sendMissParams(req, res, "pushable");
             }
+
             db.queryMeetingCount(function (err, response) {
                 if (!err) {
-                    var meetingid = 400000000000;
+                    var meetingid = 4008000000;
                     if(response.length > 0 && response[0].meetingNum > 0) {
-                        meetingid = parseInt(response[0].maxMeetingid) + 1;
+                        meetingid = meetingid + Number(dyncutils.randomStrNumber(6));
                     } else {
-                        meetingid = 400000000000 + response.length ;
+                        meetingid = meetingid + response.length + Number(dyncutils.randomStrNumber(6));
                     }
 
                     var anyrtcid = 800000000000;
                     if(response.length > 0 && response[0].meetingNum > 0) {
-                        anyrtcid = parseInt(response[0].maxAnyrtcid) + 1;
+                        anyrtcid = anyrtcid + Number(dyncutils.randomStrNumber(6));
                     } else {
-                        anyrtcid = 800000000000 + response.length ;
+                        anyrtcid = anyrtcid + response.length + Number(dyncutils.randomStrNumber(6));
                     }
 
                     db.queryMeetingInfoById([meetingid], function (err, response) {

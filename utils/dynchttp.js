@@ -9,7 +9,7 @@ exports.validateUser = function(req, res, cb) {
     } else {
         var session = dyncutils.aesDecipher(sign);
         var array = session.split(":", 2);
-        redisClient.get(array[0], function(err, data) {
+        redisClient.get("teameeting" + array[0], function(err, data) {
             if(err) {
                 cb(null, false);
             } else {
