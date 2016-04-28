@@ -5,7 +5,7 @@ var express = require('express');
 var router = express.Router();
 
 var JPush = require("../node_modules/jpush-sdk/lib/JPush/JPush.js");
-var client = JPush.buildClient(config.jpush_key, config.jpush_secret);
+var client = JPush.buildClient(config.jpush_key, config.jpush_secret, 3, null);
 
 /**
  * push meeting room message by jpush
@@ -37,7 +37,7 @@ router.post("/pushMeetingMsg", function(req, res, next) {
     }
     var jsonExtra;
     if (null == extra || extra.length == 0) {
-        jsonExtra = {};
+        extra = "{}";
     }
     jsonExtra= JSON.parse(extra);
 
@@ -59,31 +59,60 @@ router.post("/pushMeetingMsg", function(req, res, next) {
 
                 console.log("userList: " + userList);
                 if (userList != "") {
-                    client.push().setPlatform(JPush.ALL)
-                        .setAudience(JPush.tag(userList), JPush.alias(userList))
-                        .setNotification(notification, JPush.ios(notification, 'happy.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
-                        .setMessage(pushMsg)
-                        .setOptions(null, 60)
-                        .send(function(err, response) {
-                            if (err) {
-                                console.log(err.message);
-                                var responseJson = {
-                                    requestid: req._startTime.valueOf(),
-                                    code: 400,
-                                    message: err.message
-                                };
-                                dynchttp.sendSuccess(req, res, responseJson);
-                            } else {
-                                console.log('Sendno: ' + response.sendno);
-                                console.log('Msg_id: ' + response.msg_id);
-                                var responseJson = {
-                                    requestid: req._startTime.valueOf(),
-                                    code: 200,
-                                    message: 'push message succuss'
-                                };
-                                dynchttp.sendSuccess(req, res, responseJson);
-                            }
-                        });
+                    if(jsonExtra.tags == 4) {
+                        client.push().setPlatform(JPush.ALL)
+                            .setAudience(JPush.tag(userList), JPush.alias(userList))
+                            .setNotification(notification, JPush.ios(notification, 'ring.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
+                            .setMessage(pushMsg)
+                            .setOptions(null, 0, null, null, null)
+                            .send(function(err, response) {
+                                if (err) {
+                                    console.log(err.message);
+                                    var responseJson = {
+                                        requestid: req._startTime.valueOf(),
+                                        code: 400,
+                                        message: err.message
+                                    };
+                                    dynchttp.sendSuccess(req, res, responseJson);
+                                } else {
+                                    console.log('Sendno: ' + response.sendno);
+                                    console.log('Msg_id: ' + response.msg_id);
+                                    var responseJson = {
+                                        requestid: req._startTime.valueOf(),
+                                        code: 200,
+                                        message: 'push message succuss'
+                                    };
+                                    dynchttp.sendSuccess(req, res, responseJson);
+                                }
+                            });
+                    } else {
+                        client.push().setPlatform(JPush.ALL)
+                            .setAudience(JPush.tag(userList), JPush.alias(userList))
+                            .setNotification(notification, JPush.ios(notification, 'default.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
+                            .setMessage(pushMsg)
+                            .setOptions(null, 0, null, null, null)
+                            .send(function(err, response) {
+                                if (err) {
+                                    console.log(err.message);
+                                    var responseJson = {
+                                        requestid: req._startTime.valueOf(),
+                                        code: 400,
+                                        message: err.message
+                                    };
+                                    dynchttp.sendSuccess(req, res, responseJson);
+                                } else {
+                                    console.log('Sendno: ' + response.sendno);
+                                    console.log('Msg_id: ' + response.msg_id);
+                                    var responseJson = {
+                                        requestid: req._startTime.valueOf(),
+                                        code: 200,
+                                        message: 'push message succuss'
+                                    };
+                                    dynchttp.sendSuccess(req, res, responseJson);
+                                }
+                            });
+                    }
+
                 } else {
                     var responseJson = {
                         requestid: req._startTime.valueOf(),
@@ -130,7 +159,7 @@ router.post("/pushCommonMsg", function(req, res, next) {
     }
     var jsonExtra;
     if (null == extra || extra.length == 0) {
-        jsonExtra = {};
+        extra = "{}";
     }
     jsonExtra= JSON.parse(extra);
 
@@ -144,32 +173,60 @@ router.post("/pushCommonMsg", function(req, res, next) {
                 userList += "," + targetArray[i] + "";
             }
         }
-        client.push().setPlatform(JPush.ALL)
-            .setAudience(JPush.tag(userList), JPush.alias(userList))
-            .setNotification(notification, JPush.ios(notification, 'happy.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
-            .setMessage(pushMsg)
-            .setOptions(null, 60)
-            .send(function(err, response) {
-                if (err) {
-                    console.log(err.message);
-                    var responseJson = {
-                        requestid: req._startTime.valueOf(),
-                        code: 400,
-                        message: err.message
-                    };
-                    dynchttp.sendSuccess(req, res, responseJson);
-                } else {
-                    console.log('Sendno: ' + response.sendno);
-                    console.log('Msg_id: ' + response.msg_id);
-                    var responseJson = {
-                        requestid: req._startTime.valueOf(),
-                        code: 200,
-                        message: 'push message succuss'
-                    };
-                    dynchttp.sendSuccess(req, res, responseJson);
-                }
-            });
 
+        if(jsonExtra.tags == 4) {
+            client.push().setPlatform(JPush.ALL)
+                .setAudience(JPush.tag(userList), JPush.alias(userList))
+                .setNotification(notification, JPush.ios(notification, 'ring.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
+                .setMessage(pushMsg)
+                .setOptions(null, 0, null, null, null)
+                .send(function(err, response) {
+                    if (err) {
+                        console.log(err.message);
+                        var responseJson = {
+                            requestid: req._startTime.valueOf(),
+                            code: 400,
+                            message: err.message
+                        };
+                        dynchttp.sendSuccess(req, res, responseJson);
+                    } else {
+                        console.log('Sendno: ' + response.sendno);
+                        console.log('Msg_id: ' + response.msg_id);
+                        var responseJson = {
+                            requestid: req._startTime.valueOf(),
+                            code: 200,
+                            message: 'push message succuss'
+                        };
+                        dynchttp.sendSuccess(req, res, responseJson);
+                    }
+                });
+        } else {
+            client.push().setPlatform(JPush.ALL)
+                .setAudience(JPush.tag(userList), JPush.alias(userList))
+                .setNotification(notification, JPush.ios(notification, 'default.caf', 0, false, jsonExtra), JPush.android(notification, null, 1, jsonExtra))
+                .setMessage(pushMsg)
+                .setOptions(null, 0, null, null, null)
+                .send(function(err, response) {
+                    if (err) {
+                        console.log(err.message);
+                        var responseJson = {
+                            requestid: req._startTime.valueOf(),
+                            code: 400,
+                            message: err.message
+                        };
+                        dynchttp.sendSuccess(req, res, responseJson);
+                    } else {
+                        console.log('Sendno: ' + response.sendno);
+                        console.log('Msg_id: ' + response.msg_id);
+                        var responseJson = {
+                            requestid: req._startTime.valueOf(),
+                            code: 200,
+                            message: 'push message succuss'
+                        };
+                        dynchttp.sendSuccess(req, res, responseJson);
+                    }
+                });
+        }
         console.log("userList: " + userList.toString());
     } else {
         var responseJson = {

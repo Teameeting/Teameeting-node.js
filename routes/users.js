@@ -149,7 +149,7 @@ router.post("/updatePushtoken", function(req, res, next) {
 router.post("/signout", function(req, res, next) {
   dynchttp.validateUser(req, res, function(err, userid){
     if (userid) {
-      redisClient.del(userid, function(err, replay) {
+      redisClient.del("teameeting" + userid, function(err, replay) {
         if (err) {
           dynchttp.sendDbError(req, res);
         } else {
