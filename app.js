@@ -8,8 +8,10 @@ var bodyParser = require('body-parser');
 
 // Configuration
 global.config = JSON.parse(fs.readFileSync("/usr/local/teameeting/TeaMeetingServer/config.json", "utf8"));
-//global.config = require("./config");
+
 global.url = require("url");
+//global.request = require("request");
+global.base64 = require("./utils/base64");
 
 var redis = require("redis");
 global.redisClient = redis.createClient(config.redis_port, config.redis_ip);

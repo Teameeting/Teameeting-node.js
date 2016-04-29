@@ -2,6 +2,7 @@
  * Created by skyline on 15-12-2.
  */
 var express = require('express');
+var request = require('request');
 var router = express.Router();
 
 router.get('/getMeetingInfo/:meetingid', function(req, res, next) {
@@ -85,50 +86,64 @@ router.post('/applyRoom', function(req, res, next) {
                     } else {
                         meetingid = meetingid + response.length + Number(dyncutils.randomStrNumber(6));
                     }
+                    var anyrtcAppKey = config.anyrtc_appkey;
+                    var anyrtcAppToken = config.anyrtc_appToken;
+                    var authorization = base64.encode(anyrtcAppKey + ":" + anyrtcAppToken);
 
-                    var anyrtcid = 800000000000;
-                    if(response.length > 0 && response[0].meetingNum > 0) {
-                        anyrtcid = anyrtcid + Number(dyncutils.randomStrNumber(6));
-                    } else {
-                        anyrtcid = anyrtcid + response.length + Number(dyncutils.randomStrNumber(6));
-                    }
-
-                    db.queryMeetingInfoById([meetingid], function (err, response) {
-                        if (!err) {
-                            if (response.length > 0) {
-                                var responseJson = {
-                                    requestid: req._startTime.valueOf(),
-                                    code: 202,
-                                    message: 'meetingid has exist'
-                                };
-                                dynchttp.sendSuccess(req, res, responseJson);
-                            } else {
-                                db.insertMeeting([userid, meetingid, anyrtcid, meetname, meetdesc, meetusable, pushable, meettype1, meettype2, time],
-                                    function (err, response) {
-                                        if (!err) {
-                                            if (response.affectedRows == 1) {
-                                                var responseJson = {
-                                                    requestid: req._startTime.valueOf(),
-                                                    code: 200,
-                                                    meetingInfo: {meetingid: meetingid, anyrtcid: anyrtcid, meetname: meetname, meetdesc: meetdesc, meetenable: meetusable, pushable: pushable, meettype: meettype1, jointime:time},
-                                                    message: 'apply meeting success'
-                                                };
-                                                dynchttp.sendSuccess(req, res, responseJson);
-                                            } else {
-                                                var responseJson = {
-                                                    requestid: req._startTime.valueOf(),
-                                                    code: 400,
-                                                    message: 'apply meeting failed'
-                                                };
-                                                dynchttp.sendSuccess(req, res, responseJson);
-                                            }
-                                        } else {
-                                            dynchttp.sendDbError(req, res);
-                                        }
-                                    })
-                            }
+                    request.post({
+                        url: "https://www.anyrtc.io/anyrtcwebapi/applySdkAnyrtcId",
+                        headers: {
+                            'Authorization': "Bearer " + authorization,
+                            'Content-Type': "application/x-www-form-urlencoded"
+                        },
+                    }, function (error, response, body) {
+                        console.log(body);
+                        var jsonBody = JSON.parse(body);
+                        var code = jsonBody.code;
+                        if(code == 200) {
+                            var anyrtcid = jsonBody.information.anyrtcid;
+                            db.queryMeetingInfoById([meetingid], function (err, response) {
+                                if (!err) {
+                                    if (response.length > 0) {
+                                        var responseJson = {
+                                            requestid: req._startTime.valueOf(),
+                                            code: 202,
+                                            message: 'meetingid has exist'
+                                        };
+                                        dynchttp.sendSuccess(req, res, responseJson);
+                                    } else {
+                                        db.insertMeeting([userid, meetingid, anyrtcid, meetname, meetdesc, meetusable, pushable, meettype1, meettype2, time],
+                                            function (err, response) {
+                                                if (!err) {
+                                                    if (response.affectedRows == 1) {
+                                                        var responseJson = {
+                                                            requestid: req._startTime.valueOf(),
+                                                            code: 200,
+                                                            meetingInfo: {meetingid: meetingid, anyrtcid: anyrtcid, meetname: meetname, meetdesc: meetdesc, meetenable: meetusable, pushable: pushable, meettype: meettype1, jointime:time},
+                                                            message: 'apply meeting success'
+                                                        };
+                                                        dynchttp.sendSuccess(req, res, responseJson);
+                                                    } else {
+                                                        var responseJson = {
+                                                            requestid: req._startTime.valueOf(),
+                                                            code: 400,
+                                                            message: 'apply meeting failed'
+                                                        };
+                                                        dynchttp.sendSuccess(req, res, responseJson);
+                                                    }
+                                                } else {
+                                                    dynchttp.sendDbError(req, res);
+                                                }
+                                            })
+                                    }
+                                } else {
+                                    dynchttp.sendDbError(req, res);
+                                }
+                            })
+                        } else if (code == 401) {
+                            dynchttp.sendSuccess(req, res, body);
                         } else {
-                            dynchttp.sendDbError(req, res);
+                            dynchttp.sendSuccess(req, res, body);
                         }
                     })
                 } else {

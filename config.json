@@ -12,6 +12,9 @@
   "jpush_key": "28dbfe51120dc34905044161",
   "jpush_secret": "a4736c125d39148f03a24b51",
 
+  "anyrtc_appkey": "OPJXF3xnMqW+7MMTA4tRsZd6L41gnvrPcI25h9JCA4M",
+  "anyrtc_appToken": "c4cd1ab6c34ada58e622e75e41b46d6d",
+
   "mysql" : {
     "host" : "localhost",
     "user" : "root",
