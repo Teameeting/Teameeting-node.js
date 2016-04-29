@@ -1,6 +1,8 @@
 # Teameeting-node.js
 Teameeting mysql database scripts and Teameeting HTTP server
 
+
+
 Modfiy：
 
 1.修改bug和增加随机名字功能，修改数据库部分字段名字
@@ -53,23 +55,30 @@ www.anyrtc.io
 
 
 
-App
-
-
 上海铂渊电子科技有限公司
 
-GitHub组织: https://github.com/Teameeting
+GitHub组织: 
+
+https://github.com/Teameeting
 
 Teameeting--APP
+
 IOS : https://github.com/Teameeting/Teameeting-ios
 
-Android : https://github.com/Teameeting/Teameeting-Android
+Android :https://github.com/Teameeting/Teameeting-Android
 
 消息服务
+
 Teameeting-MsgServer ：https://github.com/Teameeting/Teameeting-MsgServer
 
 Mobile API
+
 Teameeting-node.js : https://github.com/Teameeting/Teameeting-node.js
+
+
+
+
+
 
 联系方式
 
