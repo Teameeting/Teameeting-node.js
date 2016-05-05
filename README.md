@@ -10,7 +10,6 @@ Modfiy：
 
 2016-03-11
 
-Modify：
 1.修改了推送的bug（仅推送会议室中不在线的成员）；
 
 2016-03-23
@@ -77,6 +76,7 @@ Teameeting-MsgServer ：https://github.com/Teameeting/Teameeting-MsgServer
 Mobile API
 
 Teameeting-node.js : https://github.com/Teameeting/Teameeting-node.js
+
 
 
 
